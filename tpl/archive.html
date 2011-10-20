@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<style>
+    #container a {
+        border-bottom: none;
+    }
+    .archive li {
+        float: left;
+        width: 130px;
+        margin: 5px 0;
+    }
+</style>
+{% endblock %}
+
+{% block main %}
+    <nav>{% include 'assets/archive.html' %}</nav>
+{% endblock %}
+
+{% block sidebar %}
+    <nav>{% include 'assets/tags.html' %}</nav>
+{% endblock %}

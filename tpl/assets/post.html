@@ -1,0 +1,22 @@
+<article>
+    <h1>{{ post.title }}</h1>
+    <aside>
+        <small>By <span class="point">{{ post.author }}</span> On <time class="point">{{ post.date|date:"Y-m-d P" }}</time> Hits <span class="point">{{ post.hits }} times</span></small>
+        <ul class="tags">
+            <h4>Categories</h4>
+            {% for category in post.categories %}
+                <li><a href="/snippet?tag={{ category }}">{{ category }}</a></li>
+            {% endfor %}
+        </ul>
+    </aside>
+    <div class="content">
+        {{ post.content_formatted }}
+    </div>
+    <footer>
+        {% if admin %}
+        <a href="/admin/write?key={{ post.key }}">Edit</a> | 
+        <a href="/admin/post/delete?key={{ post.key }}">Delete</a> | 
+        {% endif %}
+        <a class="permalink" href="/post/{{ post.permalink }}">Permalink →</a>
+    </footer>
+</article>

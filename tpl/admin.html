@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<style>
+    #main {
+        height: 500px;
+    }
+    #main nav .btn {
+        float: left;
+        font-size: 50px;
+        text-align: center;
+        width: 210px;
+        margin: 200px 30px;
+    }
+    #main nav {
+        margin-left: 200px;
+    }
+</style>
+{% endblock %}
+
+{% block main %}
+    <nav>
+        <ul>
+            <li><a class="btn" href="/admin/write">Writting</a></li>
+            <li><a class="btn" href="/admin/setting">Setting</a></li>
+        </ul>
+    </nav>
+{% endblock %}

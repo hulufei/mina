@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<style>
+    label {
+        float: left;
+        width: 130px;
+        text-align: right;
+        margin-right: 10px;
+    }
+    .btn {
+        margin-left: 140px;
+    }
+</style>
+{% endblock %}
+
+{% block main %}
+<form action="" method="post">
+    <p>
+        <label for="site_name">Site Name:</label>
+        <input id="site_name" name="site_name" type="text" value="{{ site_name }}"/>
+    </p>
+    <p>
+        <label for="site_slogan">Slogan:</label>
+        <input id="site_slogan" name="site_slogan" type="text" value="{{ site_slogan }}"/>
+    </p>
+    <p>
+        <label for="site_author">Author:</label>
+        <input id="site_author" name="site_author" type="text" value="{{ site_author }}"/>
+    </p>
+    <p>
+        <label for="site_domain">Domain:</label>
+        <input id="site_domain" name="site_domain" type="text" value="{{ site_domain }}"/>
+    </p>
+    <p>
+        <label for="gtalk">GTalk:</label>
+        <input id="gtalk" name="gtalk" type="text" placeholder="关联GTalk接受评论提醒" value="{{ gtalk }}"/>
+    </p>
+    <input class="btn" type="submit" value="Save" />
+</form>
+{% endblock %}

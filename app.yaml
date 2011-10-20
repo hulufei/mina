@@ -1,0 +1,47 @@
+application: app-id
+version: 1
+runtime: python
+api_version: 1
+
+default_expiration: "10d"
+
+handlers:
+- url: /static
+  static_dir: static
+
+- url: /favicon.ico
+  static_files: /static/image/favicon.ico
+  upload: /static/image/favicon.ico
+
+- url: /robots.txt
+  static_files: robots.txt
+  upload: robots.txt
+
+- url: /admin/.*
+  script: main.py
+  login: admin
+
+- url: .*
+  script: main.py
+
+inbound_services:
+- xmpp_message
+
+builtins:
+- remote_api: on
+
+skip_files:
+- ^(.*/)?app\.yaml
+- ^(.*/)?app\.yml
+- ^(.*/)?index\.yaml
+- ^(.*/)?index\.yml
+- ^(.*/)?#.*#
+- ^(.*/)?.*~
+- ^(.*/)?.*\.py[co]
+- ^(.*/)?.*/RCS/.*
+- ^(.*/)?\..*
+- ^(.*/)?.*\.bak$
+- ^(.*/)?.*\.xcf$
+- ^(.*/)?.*\.datastore$
+- ^(.*/)?.*\.sh$
+- ^(.*/)?.*\.bat$

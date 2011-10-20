@@ -1,0 +1,10 @@
+<ul class="tags">
+    <h4>Tags</h4>
+    {% for category in categories %}
+    <li>
+        <a href="/snippet?tag={{ category.name }}">
+            {{ category.name }}
+        </a>
+    </li>
+    {% endfor %}
+</ul>

@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<style>
+    #writting {
+        margin-top: 10px;
+        min-height: 600px;
+    }
+    article {
+        position: absolute;
+        right: 10px;
+        top: 110px;
+        width: 260px;
+        height: 600px;
+        overflow-y: scroll;
+    }
+    textarea {
+        width: 780px;
+        height: 300px;
+        margin: auto;
+    }
+    code {
+        background-color: transparent;
+    }
+    #permalink {
+        width: 280px;
+        margin-left: 5px;
+    }
+    ul#categories {
+        float: left;
+        list-style: none;
+        width: 100%;
+        padding-left: 0;
+    }
+    ul#categories li {
+        float: left;
+        width: 100px;
+        margin-right: 10px;
+    }
+</style>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+    $(function() {
+        $('#addCategory').click(function() {
+            var _value = $.trim($('#input_category').val());
+            if(_value) {
+                var $input = $('<input type="checkbox" name="category" checked="true" />').val(_value);
+                var $li = $('<li/>').append($input).append($('<label/>').text(_value));
+                $('#categories').append($li);
+            }
+        });
+    });
+</script>
+{% endblock %}
+
+{% block main %}
+    <div id="writting">
+        <form method="post" action="">
+            <input name="key" type="hidden" value="{{ key }}"/>
+            <label for="title">标题：</label>
+            <input type="text" id="title" name="title" value="{{ post.title }}" autofocus required />
+            <label for="author">作者：</label>
+            <input id="author" name="author" type="text" value="{% firstof author post.author %}" required />
+            <label for="date">日期:</label>
+            <input id="date" name="date" value="{{ post.date|date:"Y-m-d\TH:i" }}" type="datetime-local" placeholder="yyy-mm-ddThh:mm" required />
+            <p>
+                <textarea id="content" name="content">{{ post.content }}</textarea>
+            </p>
+            <label for="permalink">Permalink:</label>
+            <input id="permalink" name="permalink" type="text" placeholder="指向这篇文章的永久链接，默认用创建日期组合" value="{{ post.permalink }}" />
+            <p>Categories:
+                <input type="text" id="input_category" />
+                <input id="addCategory" class="btn" type="button" value="Add"/>
+            </p>
+            <ul id="categories">
+                {% for category in categories %}
+                <li><input type="checkbox" name="category" value="{{ category.name }}"
+                    {% if key %}
+                        {% for post_category in post.categories%}
+                            {% ifequal category.name post_category %}
+                            checked="true"
+                            {% endifequal %}
+                        {% endfor %}
+                    {% endif %}
+                />
+                <label>{{ category.name }}</label>
+                </li>
+                {% endfor %}
+                </ul>
+            <input type="submit" id="save" class="btn" name="save" value="Save" />
+        </form>
+    </div>
+{% endblock %}
+
+{% block sidebar %}
+<article>
+    <h2>Syntax Cheatsheet:</h2>
+    <h3>Phrase Emphasis</h3>
+    <pre><code>*italic*   **bold**
+_italic_   __bold__</code></pre>
+    <h3>Links</h3>
+    <p>Inline:</p>
+    <pre><code>An [example](http://url.com/ "Title")</code></pre>
+    <p>Reference-style labels (titles are optional):</p>
+    <pre><code>An [example][id]. Then, anywhere else in the doc, define the link:
+
+[id]: http://example.com/  "Title"</code></pre>
+    <h3>Images</h3>
+    <p>Inline (titles are optional):</p>
+    <pre><code>![alt text](/path/img.jpg "Title")</code></pre>
+    <p>Reference-style:</p>
+    <pre><code>![alt text][id]
+
+[id]: /url/to/img.jpg "Title"</code></pre>
+    <h3>Headers</h3>
+    <p>Setext-style:</p>
+    <pre><code>Header 1
+========
+
+Header 2
+--------</code></pre>
+    <p>atx-style (closing #'s are optional):</p>
+    <pre><code># Header 1 #
+
+## Header 2 ##
+
+###### Header 6</code></pre>
+    <h3>Lists</h3>
+    <p>Ordered, without paragraphs:</p>
+    <pre><code>1.  Foo
+2.  Bar</code></pre>
+    <p>Unordered, with paragraphs:</p>
+    <pre><code>*   A list item.
+
+    With multiple paragraphs.
+
+*   Bar</code></pre>
+
+    <p>You can nest them:</p>
+
+    <pre><code>*   Abacus
+    * answer
+*   Bubbles
+    1.  bunk
+    2.  bupkis
+        * BELITTLER
+    3. burper
+*   Cunning</code></pre>
+    <h3>Blockquotes</h3>
+    <pre><code>&gt; Email-style angle brackets
+&gt; are used for blockquotes.
+
+&gt; &gt; And, they can be nested.
+
+&gt; #### Headers in blockquotes
+&gt; 
+&gt; * You can quote a list.
+&gt; * Etc. </code></pre>
+    <h3>Code Spans</h3>
+    <pre><code>`&lt;code&gt;` spans are delimited by backticks.
+
+You can include literal backticks like `` `this` ``. </code></pre>
+    <h3>Preformatted Code Blocks</h3>
+    <p>Indent every line of a code block by at least 4 spaces or 1 tab.</p>
+    <pre><code>This is a normal paragraph.
+
+    This is a preformatted code block. </code></pre>
+    <h3>Horizontal Rules</h3>
+    <p>Three or more dashes or asterisks:</p>
+    <pre><code>---
+
+* * *
+
+- - - - </code></pre>
+    <h3>Manual Line Breaks</h3>
+    <p>End a line with two or more spaces:</p>
+    <pre><code>Roses are red,   
+Violets are blue. </code></pre>
+</article>
+{% endblock %}
