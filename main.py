@@ -101,7 +101,7 @@ class AdminHandler(webapp.RequestHandler):
 class WriterHandler(webapp.RequestHandler):
     def get(self):
         values = {}
-        values['site_name'] = 'Writting'
+        values['site_name'] = 'Writing'
         values['author'] = Site.get('author')
         key = getparam(self, 'key')
         values['categories'] = Category.all().fetch(50)
@@ -326,6 +326,7 @@ class SettingsHandler(webapp.RequestHandler):
         values = {
             'page_name': 'Setting',
             'site_name': Site.get('name'),
+            'slogan': Site.get('slogan'),
             'site_author': Site.get('author'),
             'site_domain': Site.get('domain'),
             'gtalk': Site.get('gtalk')
@@ -338,6 +339,7 @@ class SettingsHandler(webapp.RequestHandler):
         Site.set('author', getparam(self, 'site_author'))
         Site.set('domain', getparam(self, 'site_domain'))
         Site.set('gtalk', getparam(self, 'gtalk'))
+        memcache.delete('main_page')
         self.redirect('/')
 
 application = webapp.WSGIApplication(
