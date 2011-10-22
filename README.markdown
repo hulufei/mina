@@ -1,5 +1,6 @@
-mina is a simple blog system based on [Google App Engine](http://code.google.com/intl/zh-CN/appengine/), developed for some of my friends who wants to have their own blog, modified from my [original blog](http://www.hulufei.com), stealing a lot from [livid/picky](https://github.com/livid/picky)
-Demo: [http://www.hulufei.com/mina/](http://www.hulufei.com/mina/)
+mina is a simple blog system based on [Google App Engine](http://code.google.com/intl/zh-CN/appengine/), developed for some of my friends who want to have their own blog, modified from my [original site](http://www.hulufei.com), stealing a lot from [livid/picky](https://github.com/livid/picky). Feel free to use it or modify it as you wish.
+
+[Here](http://www.gongyiling.com) is what it looks like, and thank the guy give me power to finish it.
 
 # 如何使用 #
 
@@ -11,8 +12,8 @@ Demo: [http://www.hulufei.com/mina/](http://www.hulufei.com/mina/)
 
 为了能正常访问，推荐绑定自己的域名，并且使用CloudFlare服务
 
-start.bat(for Windows), start.sh(for Linux)是一个简单的启动本地开发服务器的脚本，指定了数据存储在dev_appserver.datastore文件，启动之后，访问[http://localhost:8080](http://localhost:8080)，可以看到一些基本的设置如{{ site_name }}, {{ site_author }}等如何显示
+start.bat(for Windows), start.sh(for Linux)是一个简单的启动本地开发服务器的脚本，指定了数据存储在dev_appserver.datastore文件, 方便测试和开发
 
-管理地址: http://youdomain.com/admin/, 写文章支持使用[markdown](http://daringfireball.net/projects/markdown/)，满足简单的排版格式需求
+管理地址: /admin/, 写文章支持使用[markdown](http://daringfireball.net/projects/markdown/)，满足简单的排版格式需求
 
 如有其他疑问，请发邮件：[f.calabash@gmail.com](mailto:f.calabash@gmail.com)
