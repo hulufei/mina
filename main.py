@@ -40,8 +40,8 @@ def doRender(self, template_html, values={}):
     path = os.path.join(os.path.dirname(__file__), 'tpl', template_html)
     if not values.has_key('site_author'):
         values['site_author'] = Site.get('author')
-    if users.is_current_user_admin():
-        values['admin'] = True
+    if not values.has_key('admin'):
+        values['admin'] = users.is_current_user_admin()
     page = template.render(path, values)
     self.response.out.write(page)
     return page
@@ -58,14 +58,17 @@ class MainHandler(webapp.RequestHandler):
             self.response.out.write(main_page)
         else:
             posts = Post.all().order('-date').filter('is_delete =', False).fetch(PAGESIZE)
+            admin = user.is_current_user_admin()
             values = {
                 'title': site_name,
                 'site_name': site_name,
                 'site_slogan': site_slogan,
-                'posts':posts
+                'posts':posts,
+                'admin': admin
             }
             page = doRender(self, 'index.html', values)
-            memcache.add('main_page', page)
+            if not admin:
+                memcache.add('main_page', page)
 
 class SnippetHandler(webapp.RequestHandler):
     def get(self):
