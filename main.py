@@ -53,12 +53,12 @@ class MainHandler(webapp.RequestHandler):
     def get(self):
         site_name = Site.get('name')
         site_slogan = Site.get('slogan')
+        admin = users.is_current_user_admin()
         main_page = memcache.get('main_page')
-        if main_page is not None:
+        if not admin and main_page is not None:
             self.response.out.write(main_page)
         else:
             posts = Post.all().order('-date').filter('is_delete =', False).fetch(PAGESIZE)
-            admin = users.is_current_user_admin()
             values = {
                 'title': site_name,
                 'site_name': site_name,
@@ -222,16 +222,11 @@ class PostHandler(webapp.RequestHandler):
             post.put()
         except:
             post.hits = post.hits - 1
-        if users.is_current_user_admin():
-            admin = True
-        else:
-            admin = False
         comments = Comment.all().filter('post =', post).fetch(100)
         values = {
             'title': post.title,
             'post': post,
             'comments': comments,
-            'admin': admin,
             'site_name': Site.get('name'),
             'site_slogan': Site.get('slogan')
         }

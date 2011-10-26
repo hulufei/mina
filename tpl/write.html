@@ -22,6 +22,27 @@
     code {
         background-color: transparent;
     }
+    form {
+        position: relative;
+    }
+    .file_uploader {
+        color: #8c8c8c;
+        text-align: center;
+        width: 150px;
+        height: 150px;
+        border: 2px dashed #bbb;
+        -webkit-border-radius: 5px;
+        -moz-border-radius: 5px;
+        border-radius: 5px;
+        position: absolute;
+        top: 50px;
+        left: -180px;
+    }
+    .file_uploader .msg {
+        position: absolute;
+        padding: 40px 5px;
+        line-height: 1.55;
+    }
     #permalink {
         width: 280px;
         margin-left: 5px;
@@ -49,6 +70,34 @@
                 $('#categories').append($li);
             }
         });
+
+        /* Drag & Drop file */
+        function handleDragOver(evt) {
+            this.style.borderColor = '#000';
+            evt.stopPropagation();
+            evt.preventDefault();
+        }
+        function handleFileSelect(evt) {
+            this.removeAttribute('style');
+            evt.stopPropagation();
+            evt.preventDefault();
+            var file = evt.dataTransfer.files[0];
+            var reader = new FileReader();
+            reader.readAsText(file);
+            reader.onload = function(e) {
+                var txt = e.target.result;
+                //var lines = txt.split(/\r\n|\r|\n/);
+                document.getElementById('content').value = txt;
+            };
+        }
+        var dropZone = document.getElementsByClassName('file_uploader')[0]
+        if (window.File && window.FileReader) {
+            dropZone.addEventListener('dragover', handleDragOver, false);
+            dropZone.addEventListener('drop', handleFileSelect, false);
+        }
+        else {
+            $(dropZone).hide();
+        }
     });
 </script>
 {% endblock %}
@@ -56,13 +105,16 @@
 {% block main %}
     <div id="writting">
         <form method="post" action="">
+            <div class="file_uploader">
+                <p class="msg">Drag & Drop Markdown File Here To Upload</p>
+            </div>
             <input name="key" type="hidden" value="{{ key }}"/>
             <label for="title">标题：</label>
             <input type="text" id="title" name="title" value="{{ post.title }}" autofocus required />
             <label for="author">作者：</label>
             <input id="author" name="author" type="text" value="{% firstof author post.author %}" required />
             <label for="date">日期:</label>
-            <input id="date" name="date" value="{{ post.date|date:"Y-m-d\TH:i" }}" type="datetime-local" placeholder="yyy-mm-ddThh:mm" required />
+            <input id="date" name="date" value="{{ post.date|date:"Y-m-d\TH:i" }}" type="datetime-local" required />
             <p>
                 <textarea id="content" name="content">{{ post.content }}</textarea>
             </p>
