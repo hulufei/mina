@@ -58,7 +58,7 @@ class MainHandler(webapp.RequestHandler):
             self.response.out.write(main_page)
         else:
             posts = Post.all().order('-date').filter('is_delete =', False).fetch(PAGESIZE)
-            admin = user.is_current_user_admin()
+            admin = users.is_current_user_admin()
             values = {
                 'title': site_name,
                 'site_name': site_name,
@@ -345,6 +345,11 @@ class SettingsHandler(webapp.RequestHandler):
         memcache.delete('main_page')
         self.redirect('/')
 
+class LogoutHandler(webapp.RequestHandler):
+    def get(self):
+        logout_url = users.create_logout_url('/')
+        self.redirect(logout_url)
+
 application = webapp.WSGIApplication(
 				    [('/', MainHandler),
 				     ('/admin/', AdminHandler),
@@ -359,6 +364,7 @@ application = webapp.WSGIApplication(
 				     ('/comment', AddComment),
                      ('/admin/comment/reply', ReplyComment),
 				     ('/snippet', SnippetHandler),
+                     ('/logout', LogoutHandler)
 				    ], debug=True)
 
 def main():
