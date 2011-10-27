@@ -37,7 +37,12 @@ def getparam(self, param):
         raise 'Get param error'
 
 def doRender(self, template_html, values={}):
-    path = os.path.join(os.path.dirname(__file__), 'tpl', template_html)
+    tpl = os.path.join(os.path.dirname(__file__), 'tpl')
+    site_theme = Site.get('site_theme')
+    themes = os.listdir(tpl)
+    if site_theme is None or site_theme not in themes:
+        site_theme = 'default'
+    path = os.path.join(tpl, site_theme, template_html)
     if not values.has_key('site_author'):
         values['site_author'] = Site.get('author')
     if not values.has_key('admin'):
@@ -69,33 +74,6 @@ class MainHandler(webapp.RequestHandler):
             page = doRender(self, 'index.html', values)
             if not admin:
                 memcache.add('main_page', page)
-
-class SnippetHandler(webapp.RequestHandler):
-    def get(self):
-        tag = getparam(self, 'tag')
-        archies = getparam(self, 'archies')
-        values = {
-            'site_name': Site.get('name'),
-            'site_slogan': Site.get('slogan')
-        }
-        if archies:
-            year_month = archies.split('-')
-            year = int(year_month[0])
-            month = int(year_month[1])
-            next_month = month + 1
-            if next_month > 12:
-                limit_date = datetime.strptime(str(year + 1) + '-' + str(1), '%Y-%m')
-            else:
-                limit_date = datetime.strptime(str(year) + '-' + str(month + 1), '%Y-%m')
-            posts = db.GqlQuery("SELECT * FROM Post WHERE is_delete = False AND date >=:1 AND date <=:2",
-                datetime.strptime(archies, '%Y-%m'), limit_date).fetch(100)
-            values['posts'] = posts
-            snippet = 'index.html'
-        elif tag:
-            query = Post.all().order('-date').filter('is_delete =', False).filter('categories =', tag)
-            values['posts'] = query.fetch(100)
-            snippet = 'index.html'
-        doRender(self, snippet, values)
 
 class AdminHandler(webapp.RequestHandler):
     def get(self):
@@ -233,12 +211,38 @@ class PostHandler(webapp.RequestHandler):
         doRender(self, tpl, values)
 
 class ArchiveHandler(webapp.RequestHandler):
-    def get(self):
-        values = {}
-        values['site_name'] = Site.get('name')
-        values['archies'] = Archie.all().order('-date').fetch(50)
-        values['categories'] = Category.all().order('-name').fetch(50)
-        doRender(self, 'archive.html', values)
+    def get(self, date):
+        values = {
+            'site_name': Site.get('name'),
+            'site_slogan': Site.get('slogan')
+        }
+        if date:
+            year_month = date.split('-')
+            year = int(year_month[0])
+            month = int(year_month[1])
+            next_month = month + 1
+            if next_month > 12:
+                limit_date = datetime.strptime(str(year + 1) + '-' + str(1), '%Y-%m')
+            else:
+                limit_date = datetime.strptime(str(year) + '-' + str(month + 1), '%Y-%m')
+            posts = db.GqlQuery("SELECT * FROM Post WHERE is_delete = False AND date >=:1 AND date <=:2",
+                datetime.strptime(date, '%Y-%m'), limit_date).fetch(100)
+            values['posts'] = posts
+            doRender(self, 'index.html', values)
+        else:
+            values['archies'] = Archie.all().order('-date').fetch(50)
+            values['categories'] = Category.all().order('-name').fetch(50)
+            doRender(self, 'archive.html', values)
+
+class TagHandler(webapp.RequestHandler):
+    def get(self, tag):
+        values = {
+            'site_name': Site.get('name'),
+            'site_slogan': Site.get('slogan')
+        }
+        query = Post.all().order('-date').filter('is_delete =', False).filter('categories =', tag)
+        values['posts'] = query.fetch(100)
+        doRender(self, 'index.html', values)
 
 class AddComment(webapp.RequestHandler):
     def post(self):
@@ -327,6 +331,7 @@ class SettingsHandler(webapp.RequestHandler):
             'slogan': Site.get('slogan'),
             'site_author': Site.get('author'),
             'site_domain': Site.get('domain'),
+            'site_theme': Site.get('site_theme'),
             'gtalk': Site.get('gtalk')
         }
         doRender(self, 'setting.html', values)
@@ -336,6 +341,7 @@ class SettingsHandler(webapp.RequestHandler):
         Site.set('slogan', getparam(self, 'site_slogan'))
         Site.set('author', getparam(self, 'site_author'))
         Site.set('domain', getparam(self, 'site_domain'))
+        Site.set('site_theme', getparam(self, 'site_theme'))
         Site.set('gtalk', getparam(self, 'gtalk'))
         memcache.delete('main_page')
         self.redirect('/')
@@ -350,7 +356,8 @@ application = webapp.WSGIApplication(
 				     ('/admin/', AdminHandler),
 				     ('/post/([0-9a-zA-Z\-\_]+)', PostHandler),
 				     ('/post/(.*)', PostHandler),
-                     ('/archive/', ArchiveHandler),
+                     ('/archive/(.*)', ArchiveHandler),
+                     ('/tag/(.*)', TagHandler),
                      ('/feed/', AtomFeedHandler),
                      ('/admin/setting', SettingsHandler),
 				     ('/admin/write', WriterHandler),
@@ -358,7 +365,6 @@ application = webapp.WSGIApplication(
                      ('/admin/comment/delete', DeleteComment),
 				     ('/comment', AddComment),
                      ('/admin/comment/reply', ReplyComment),
-				     ('/snippet', SnippetHandler),
                      ('/logout', LogoutHandler)
 				    ], debug=True)
 
