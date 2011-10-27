@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<link media="all" rel="stylesheet" href="/static/default/css/article.css" type="text/css" />
+{% endblock %}
+
+{% block main %}
+    {% for post in posts %}
+        {% include 'assets/post.html' %}
+    {% endfor %}
+{% endblock %}

@@ -1,0 +1,67 @@
+.notice {
+    border: 1px solid red;
+}
+#main article {
+    position: relative;
+    border-bottom: 1px solid #333;
+    padding-left: 180px;
+}
+#main > article {
+    min-height: 400px;
+    float: left;
+    margin-bottom: 10px;
+}
+#main article:last-child {
+    border-bottom: none;
+}
+#main article aside {
+    position: absolute;
+    left: 0;
+    text-align: right;
+}
+#main article aside ul {
+    list-style: none;
+}
+article .content {
+    line-height: 1.5em;
+}
+article small .point {
+    display: block;
+    font-weight: bold;
+    margin: 2px 0 10px;
+}
+article footer {
+    font-size: 0.8em;
+    padding-bottom: 5px;
+    float: right;
+}
+/* -------------------comments style------------------*/
+#comments > * {
+    padding-left: 180px;
+}
+#comments article {
+    border-bottom: none;
+}
+#comments .content {
+    min-height: 100px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #333;
+}
+#comments .response {
+    margin-left: 30px;
+    margin-bottom: 10px;
+}
+#comments .response article {
+    padding-left: 0;
+}
+#comments form input {
+    display: block;
+}
+#comments form textarea {
+    display: block;
+    width: 98%;
+    height: 80px;
+}
+input[name="site"] {
+    width: 280px;
+}

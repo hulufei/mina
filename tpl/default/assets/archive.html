@@ -1,0 +1,10 @@
+<ul class="archive">
+    <h4>Archives</h4>
+    {% for archie in archies %}
+        <li>
+            <a href="/archive/{{ archie.date.year }}-{{ archie.date.month }}">
+                {{ archie.date|date:"Y年m月" }}
+            </a>
+        </li>
+    {% endfor %}
+</ul>
