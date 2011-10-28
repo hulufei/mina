@@ -37,26 +37,6 @@ class Comment(db.Model):
     response = db.StringProperty(default='')
     response_date = db.DateTimeProperty(auto_now_add=True)
 
-class Message(db.Model):
-    nickname = db.StringProperty()
-    email = db.StringProperty()
-    message = db.TextProperty()
-    date = db.DateTimeProperty(auto_now_add=True)
-
-class User(db.Model):
-    user = db.UserProperty(required=True)
-    nickname = db.StringProperty()
-
-class Picture(db.Model):
-    data = db.BlobProperty()
-    date = db.DateTimeProperty(auto_now_add=True)
-
-class Link(db.Model):
-    url = db.LinkProperty(required=True)
-    text = db.StringProperty(required=True)
-    tags = db.StringListProperty()
-    description = db.StringProperty()
-
 class Site(db.Model):
     title = db.StringProperty(required=False, indexed=True)
     substance = db.TextProperty()
