@@ -47,6 +47,16 @@ def doRender(self, template_html, values={}):
         values['site_author'] = Site.get('author')
     if not values.has_key('admin'):
         values['admin'] = users.is_current_user_admin()
+    archives = memcache.get('archives')
+    if archives is None:
+        archives = Archie.all().order('-date').fetch(100)
+        memcache.set('archives', archives)
+    values['archies'] = archives
+    tags = memcache.get('tags')
+    if tags is None:
+        tags = Category.all().order('-name').fetch(100)
+        memcache.set('tags', tags)
+    values['categories'] = tags
     page = template.render(path, values)
     self.response.out.write(page)
     return page
@@ -154,6 +164,8 @@ class WriterHandler(webapp.RequestHandler):
                 post.categories.append(category)
         post.put()
         memcache.delete('main_page')
+        memcache.delete('archives')
+        memcache.delete('tags')
         self.redirect('/post/' + permalink)
 
 class DeletePost(webapp.RequestHandler):
@@ -167,9 +179,9 @@ class DeletePost(webapp.RequestHandler):
                 category_entity.postNum -= 1
                 if category_entity.postNum == 0:
                     category_entity.delete()
-            else:
-                category_entity.put()
-        comments = Comment.all().filter('post =', post).fetch(1000)
+                else:
+                    category_entity.put()
+        comments = Comment.all().filter('post =', post).fetch(100)
         if len(comments) > 0:
             db.delete(comments)
         # Update archies
@@ -184,6 +196,8 @@ class DeletePost(webapp.RequestHandler):
         post.is_delete = True
         post.put()
         memcache.delete('main_page')
+        memcache.delete('archives')
+        memcache.delete('tags')
         self.response.out.write('<p>Deleted</p><a href="/">Back to home</a>')
 
 class PostHandler(webapp.RequestHandler):
@@ -230,8 +244,6 @@ class ArchiveHandler(webapp.RequestHandler):
             values['posts'] = posts
             doRender(self, 'index.html', values)
         else:
-            values['archies'] = Archie.all().order('-date').fetch(50)
-            values['categories'] = Category.all().order('-name').fetch(50)
             doRender(self, 'archive.html', values)
 
 class TagHandler(webapp.RequestHandler):
@@ -241,7 +253,7 @@ class TagHandler(webapp.RequestHandler):
             'site_slogan': Site.get('slogan')
         }
         query = Post.all().order('-date').filter('is_delete =', False).filter('categories =', tag)
-        values['posts'] = query.fetch(100)
+        values['posts'] = query.fetch(PAGESIZE)
         doRender(self, 'index.html', values)
 
 class AddComment(webapp.RequestHandler):
@@ -318,7 +330,8 @@ class AtomFeedHandler(webapp.RequestHandler):
           articles = db.GqlQuery("SELECT * FROM Post WHERE is_delete = FALSE ORDER BY date DESC LIMIT 100")
           template_values['articles'] = articles
           template_values['articles_total'] = articles.count()
-          output = doRender(self, 'feed.xml', template_values)
+          path = os.path.join(os.path.dirname(__file__), 'tpl', 'feed.xml')
+          output = template.render(path, template_values)
           memcache.set('feed_output', output, 86400)
         self.response.headers['Content-type'] = 'text/xml; charset=UTF-8'
         self.response.out.write(output)
