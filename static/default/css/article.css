@@ -7,9 +7,9 @@
     padding-left: 180px;
 }
 #main > article {
-    min-height: 400px;
     float: left;
     margin-bottom: 10px;
+    width: 620px;
 }
 #main article:last-child {
     border-bottom: none;
@@ -24,6 +24,7 @@
 }
 article .content {
     line-height: 1.5em;
+    min-height: 380px;
 }
 article small .point {
     display: block;
