@@ -252,6 +252,7 @@ class TagHandler(webapp.RequestHandler):
             'site_name': Site.get('name'),
             'site_slogan': Site.get('slogan')
         }
+        tag = urllib.unquote(tag).decode('utf-8')
         query = Post.all().order('-date').filter('is_delete =', False).filter('categories =', tag)
         values['posts'] = query.fetch(PAGESIZE)
         doRender(self, 'index.html', values)
