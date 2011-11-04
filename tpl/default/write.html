@@ -87,7 +87,11 @@
             reader.onload = function(e) {
                 var txt = e.target.result;
                 //var lines = txt.split(/\r\n|\r|\n/);
-                document.getElementById('content').value = txt;
+                var reg = /^#([^#]+)#*/,
+                    match = txt.match(reg),
+                    content = txt.replace(reg, '');
+                document.getElementById('title').value = match ? $.trim(match[1]) : '';
+                document.getElementById('content').value = $.trim(content);
             };
         }
         var dropZone = document.getElementsByClassName('file_uploader')[0]
