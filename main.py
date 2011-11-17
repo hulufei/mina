@@ -130,6 +130,25 @@ class WriterHandler(webapp.RequestHandler):
                 result.postNum -= 1
                 post.categories.remove(cat)
                 result.put()
+            # Archie the post
+            serial_date_current = date.date().replace(date.year, date.month, 1)
+            serial_date_before = date.date().replace(post.date.year, post.date.month, 1)
+            if serial_date_before != serial_date_current:
+                # Update archies before
+                archies = Archie.gql('WHERE date = :1', serial_date_before).get()
+                archies.count -= 1
+                if archies.count <= 0:
+                    db.delete(archies)
+                else:
+                    archies.put()
+                # Re-archie the post
+                archie = Archie.gql('WHERE date = :1', serial_date_current).get()
+                if archie:
+                    archie.count += 1
+                else:
+                    archie = Archie(date=serial_date_current, count=1)
+                archie.put()
+                post.archie = archie
             post.title = title
             post.author = author
             post.content = content
@@ -139,15 +158,15 @@ class WriterHandler(webapp.RequestHandler):
         else: 
             # Add new post,create post
             post = Post(title=title, author=author, content=content, content_formatted=content_formatted, date=date, permalink=permalink)
-        # Archie the post
-        serial_date = date.date().replace(date.year, date.month, 1)
-        archie = Archie.gql('WHERE date = :1', serial_date).get()
-        if archie:
-            archie.count += 1
-        else:
-            archie = Archie(date=serial_date, count=1)
-        archie.put()
-        post.archie = archie
+            # Archie the post
+            serial_date = date.date().replace(date.year, date.month, 1)
+            archie = Archie.gql('WHERE date = :1', serial_date).get()
+            if archie:
+                archie.count += 1
+            else:
+                archie = Archie(date=serial_date, count=1)
+            archie.put()
+            post.archie = archie
 
         for category in categories:
             category_query.bind(category)
@@ -365,6 +384,13 @@ class LogoutHandler(webapp.RequestHandler):
         logout_url = users.create_logout_url('/')
         self.redirect(logout_url)
 
+class MemcacheHandler(webapp.RequestHandler):
+    def get(self):
+        memcache.delete('main_page')
+        memcache.delete('archives')
+        memcache.delete('tags')
+        self.response.out.write('Clear main_page, archives, tags ok')
+
 application = webapp.WSGIApplication(
 				    [('/', MainHandler),
 				     ('/admin/', AdminHandler),
@@ -379,7 +405,8 @@ application = webapp.WSGIApplication(
                      ('/admin/comment/delete', DeleteComment),
 				     ('/comment', AddComment),
                      ('/admin/comment/reply', ReplyComment),
-                     ('/logout', LogoutHandler)
+                     ('/logout', LogoutHandler),
+                     ('/admin/clearmemcache', MemcacheHandler)
 				    ], debug=True)
 
 def main():
