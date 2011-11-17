@@ -1,6 +1,6 @@
 mina is a simple blog system based on [Google App Engine](http://code.google.com/intl/zh-CN/appengine/), developed for some of my friends who want to have their own blog, modified from my [original site](http://www.hulufei.com), stealing a lot from [livid/picky](https://github.com/livid/picky). Feel free to use it or modify it as you wish.
 
-[Here](http://www.gongyiling.com) is what it looks like, and thank the guy give me power to finish it.
+[Here](http://www.hulufei.com/mina) is what it looks like, and thank the [guy](http://www.gongyiling.com) give me power to finish it.
 
 # 如何使用 #
 
