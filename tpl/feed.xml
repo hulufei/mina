@@ -21,15 +21,7 @@
             <uri>http://{{ site_domain }}/</uri>
         </author>
         <content type="html" xml:base="http://{{ site_domain }}/" xml:lang="en"><![CDATA[
-        {% ifequal article.format 'markdown' %}
             {{ article.content_formatted }}
-        {% else %}
-            {% ifequal article.format 'txt' %}
-                {{ article.content|linebreaksbr }}
-            {% else %}
-                {{ article.content }}
-            {% endifequal %}
-        {% endifequal %}
         ]]></content>
     </entry>
     {% endfor %}
