@@ -1,9 +1,10 @@
 <section id="comments">
     <h1>Comments</h1>
     {% for comment in comments %}
-        <article>
+        <article class="clearfix" key="{{ comment.key }}">
             <aside>
                 <!--<img src="{{ comment.gravatar }}" alt="avatar"/>-->
+                <a name="{{ comment.key.id }}"></a>
                 <small>
                     <span class="point">
                     {% if comment.site %}

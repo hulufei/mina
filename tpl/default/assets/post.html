@@ -10,7 +10,7 @@
         </ul>
     </aside>
     <div class="content">
-        {{ post.content_formatted }}
+        {{ post.content_formatted|safe }}
     </div>
     <footer>
         {% if admin %}

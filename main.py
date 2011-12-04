@@ -182,9 +182,9 @@ class WriterHandler(webapp.RequestHandler):
             if category not in post.categories:
                 post.categories.append(category)
         post.put()
-        memcache.delete('main_page')
-        memcache.delete('archives')
-        memcache.delete('tags')
+        memcache.set('main_page', None)
+        memcache.set('archives', None)
+        memcache.set('tags', None)
         self.redirect('/post/' + permalink)
 
 class DeletePost(webapp.RequestHandler):
@@ -214,9 +214,9 @@ class DeletePost(webapp.RequestHandler):
         #db.delete(db_key)
         post.is_delete = True
         post.put()
-        memcache.delete('main_page')
-        memcache.delete('archives')
-        memcache.delete('tags')
+        memcache.set('main_page', None)
+        memcache.set('archives', None)
+        memcache.set('tags', None)
         self.response.out.write('<p>Deleted</p><a href="/">Back to home</a>')
 
 class PostHandler(webapp.RequestHandler):
@@ -298,7 +298,13 @@ class AddComment(webapp.RequestHandler):
         comment.post.put()
         comment.put()
         permalink = self.request.host_url + '/post/' + comment.post.permalink
-        self.redirect(permalink)
+        if getparam(self, 'is_ajax'):
+            data = {'avatar': gravatar, 'nickname': nickname, 'content': content, 'date': datetime.now().strftime('%Y-%m-%d %H:%M')}
+            self.response.headers['Content-Type'] = 'application/json'
+            self.response.out.write(simplejson.dumps(data))
+        else:
+            redirect_link = '%s#%s' %(permalink, comment.key().id())
+            self.redirect(redirect_link)
         gt = Site.get('gtalk')
         xmpp.send_message(gt, 
                 '%s(%s) comments on %s: %s' % (nickname, email, permalink, content))
@@ -376,7 +382,7 @@ class SettingsHandler(webapp.RequestHandler):
         Site.set('domain', getparam(self, 'site_domain'))
         Site.set('site_theme', getparam(self, 'site_theme'))
         Site.set('gtalk', getparam(self, 'gtalk'))
-        memcache.delete('main_page')
+        memcache.set('main_page', None)
         self.redirect('/')
 
 class LogoutHandler(webapp.RequestHandler):
@@ -386,10 +392,29 @@ class LogoutHandler(webapp.RequestHandler):
 
 class MemcacheHandler(webapp.RequestHandler):
     def get(self):
-        memcache.delete('main_page')
-        memcache.delete('archives')
-        memcache.delete('tags')
-        self.response.out.write('Clear main_page, archives, tags ok')
+        stats = memcache.get_stats()
+        tweets = memcache.get('tweets')
+        output = """
+            memcache stats:
+            <br/>
+            ----------------------------------
+            <br/>
+            %s
+            <br/>
+            tweets:
+            <br/>
+            ----------------------------------
+            <br/>
+            %s
+            <br/>
+            <form action="" method="post">
+                <input type="submit" value="flush_all"/>
+            </form>
+        """ %(stats, tweets)
+        self.response.out.write(output)
+    def post(self):
+        result = memcache.flush_all()
+        self.response.out.write('flush_all %s' % result)
 
 application = webapp.WSGIApplication(
 				    [('/', MainHandler),
@@ -406,7 +431,7 @@ application = webapp.WSGIApplication(
 				     ('/comment', AddComment),
                      ('/admin/comment/reply', ReplyComment),
                      ('/logout', LogoutHandler),
-                     ('/admin/clearmemcache', MemcacheHandler)
+                     ('/admin/memcache', MemcacheHandler)
 				    ], debug=True)
 
 def main():
