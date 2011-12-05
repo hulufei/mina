@@ -284,29 +284,35 @@ class AddComment(webapp.RequestHandler):
         site = getparam(self, 'site').strip()
         content = getparam(self, 'content')
 
+        gt = Site.get('gtalk')
         if nickname.strip() == '':
             nickname = u'路人'
         if len(site) < 8 or not site.startswith('http://'):
             site = None
         if content.strip() == '':
             self.response.out.write('You comment has no meaning!!')
-        gravatar = getavatar(email, size='40')
-        comment = Comment(post=post_key, nickname=nickname, email=email,
-            gravatar=gravatar, ip=self.request.remote_addr, site=site,
-            content=content)
-        comment.post.comment_count += 1
-        comment.post.put()
-        comment.put()
-        permalink = self.request.host_url + '/post/' + comment.post.permalink
-        if getparam(self, 'is_ajax'):
-            data = {'avatar': gravatar, 'nickname': nickname, 'content': content, 'date': datetime.now().strftime('%Y-%m-%d %H:%M')}
-            self.response.headers['Content-Type'] = 'application/json'
-            self.response.out.write(simplejson.dumps(data))
+        spam_pattern = r'.*<a\s+href="\s*http://.*">.*</a>'
+        if re.match(spam_pattern, content, re.DOTALL):
+            permalink = db.get(post_key).permalink
+            xmpp.send_message(gt, 
+                'Spam checked, %s(%s) comments on %s: %s' % (nickname, email, permalink, content))
         else:
-            redirect_link = '%s#%s' %(permalink, comment.key().id())
-            self.redirect(redirect_link)
-        gt = Site.get('gtalk')
-        xmpp.send_message(gt, 
+            gravatar = getavatar(email, size='40')
+            comment = Comment(post=post_key, nickname=nickname, email=email,
+                gravatar=gravatar, ip=self.request.remote_addr, site=site,
+                content=content)
+            comment.post.comment_count += 1
+            comment.post.put()
+            comment.put()
+            permalink = self.request.host_url + '/post/' + comment.post.permalink
+            if getparam(self, 'is_ajax'):
+                data = {'avatar': gravatar, 'nickname': nickname, 'content': content, 'date': datetime.now().strftime('%Y-%m-%d %H:%M')}
+                self.response.headers['Content-Type'] = 'application/json'
+                self.response.out.write(simplejson.dumps(data))
+            else:
+                redirect_link = '%s#%s' %(permalink, comment.key().id())
+                self.redirect(redirect_link)
+            xmpp.send_message(gt, 
                 '%s(%s) comments on %s: %s' % (nickname, email, permalink, content))
 
 class DeleteComment(webapp.RequestHandler):
