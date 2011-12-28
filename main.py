@@ -293,9 +293,8 @@ class AddComment(webapp.RequestHandler):
             self.response.out.write('You comment has no meaning!!')
         spam_pattern = r'.*<a\s+href="\s*http://.*">.*</a>'
         if re.match(spam_pattern, content, re.DOTALL):
-            permalink = db.get(post_key).permalink
-            xmpp.send_message(gt, 
-                'Spam checked, %s(%s) comments on %s: %s' % (nickname, email, permalink, content))
+            ip = self.request.remote_addr
+            logging.warn('Spam sent from %s' % ip)
         else:
             gravatar = getavatar(email, size='40')
             comment = Comment(post=post_key, nickname=nickname, email=email,

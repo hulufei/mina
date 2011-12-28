@@ -21,7 +21,7 @@
             <uri>http://{{ site_domain }}/</uri>
         </author>
         <content type="html" xml:base="http://{{ site_domain }}/" xml:lang="en"><![CDATA[
-            {{ article.content_formatted }}
+            {{ article.content_formatted|safe }}
         ]]></content>
     </entry>
     {% endfor %}
