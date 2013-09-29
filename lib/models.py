@@ -10,9 +10,9 @@ class Post(db.Model):
     author = db.StringProperty(required=True)
     date = db.DateTimeProperty(auto_now_add=True)
     last_modified = db.DateTimeProperty(auto_now=True)
-    content = db.TextProperty(required=True)
+    content = db.TextProperty(required=True, default='')
     content_formatted = db.TextProperty()
-    #type=db.StringProperty(default='post',choices=['post','page'])
+
     comment_count = db.IntegerProperty(default=0)
     categories = db.StringListProperty(default=None)
     hits = db.IntegerProperty(default=0)

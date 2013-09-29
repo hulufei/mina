@@ -23,6 +23,7 @@ from google.appengine.api import xmpp
 from lib.models import *
 
 PAGESIZE = Site.get('page_size') or 10
+GRUBER_URLINTEXT_PAT = re.compile(ur'(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:\'".,<>?\xab\xbb\u201c\u201d\u2018\u2019]))')
 
 def getavatar(email, size, default='identicon'):
     gravatar_url = 'http://www.gravatar.com/avatar/%s/?%s'
@@ -110,15 +111,20 @@ class WriterHandler(webapp.RequestHandler):
         content_formatted = markdown.markdown(content)
         #获取tags集合
         categories = set(self.request.get_all('category'))
-        permalink = self.request.get('permalink')
+        permalink = self.request.get('permalink').strip()
+        is_page = False
 
         if permalink == '' or permalink is None:
             permalink = date.strftime('%Y%m%d%H%M')
-        permalink = '-'.join(permalink.split())
+        elif GRUBER_URLINTEXT_PAT.match(permalink):
+            is_page = True
+        else:
+            permalink = '-'.join(permalink.split())
         #构造查询Category的GqlQuery对象
         category_query = db.GqlQuery('SELECT * FROM Category WHERE name = :1')
 
-        if key:	#edit post,update post
+        if key:
+            # Edit post, update post
             post = db.get(db.Key(key))
             #相应文章当前所属tags集合
             post_categories = set(post.categories)
@@ -155,9 +161,10 @@ class WriterHandler(webapp.RequestHandler):
             post.content_formatted = content_formatted
             post.date = date
             post.permalink = permalink
+            post.is_page = is_page
         else:
             # Add new post,create post
-            post = Post(title=title, author=author, content=content, content_formatted=content_formatted, date=date, permalink=permalink)
+            post = Post(title=title, author=author, content=content, content_formatted=content_formatted, date=date, permalink=permalink, is_page=is_page)
             # Archie the post
             serial_date = date.date().replace(date.year, date.month, 1)
             archie = Archie.gql('WHERE date = :1', serial_date).get()
