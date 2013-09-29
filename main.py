@@ -406,32 +406,6 @@ class LogoutHandler(webapp.RequestHandler):
         logout_url = users.create_logout_url('/')
         self.redirect(logout_url)
 
-class MemcacheHandler(webapp.RequestHandler):
-    def get(self):
-        stats = memcache.get_stats()
-        tweets = memcache.get('tweets')
-        output = """
-            memcache stats:
-            <br/>
-            ----------------------------------
-            <br/>
-            %s
-            <br/>
-            tweets:
-            <br/>
-            ----------------------------------
-            <br/>
-            %s
-            <br/>
-            <form action="" method="post">
-                <input type="submit" value="flush_all"/>
-            </form>
-        """ %(stats, tweets)
-        self.response.out.write(output)
-    def post(self):
-        result = memcache.flush_all()
-        self.response.out.write('flush_all %s' % result)
-
 application = webapp.WSGIApplication(
             [('/', MainHandler),
              ('/admin/', AdminHandler),
@@ -446,8 +420,7 @@ application = webapp.WSGIApplication(
              ('/admin/comment/delete', DeleteComment),
              ('/comment', AddComment),
              ('/admin/comment/reply', ReplyComment),
-             ('/logout', LogoutHandler),
-             ('/admin/memcache', MemcacheHandler)
+             ('/logout', LogoutHandler)
             ], debug=True)
 
 def main():
