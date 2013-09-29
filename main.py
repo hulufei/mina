@@ -7,7 +7,7 @@ import re
 import random
 import string
 import hashlib
-import simplejson
+import json as simplejson
 from datetime import datetime
 import logging
 import markdown
@@ -121,10 +121,10 @@ class WriterHandler(webapp.RequestHandler):
         if key:	#edit post,update post
             post = db.get(db.Key(key))
             #相应文章当前所属tags集合
-            post_categories = set(post.categories)    
+            post_categories = set(post.categories)
             #编辑后取消关联的tags集合
             cancel_categories = post_categories - categories
-            for cat in cancel_categories:   
+            for cat in cancel_categories:
                 category_query.bind(cat)
                 result = category_query.get()
                 result.postNum -= 1
@@ -155,7 +155,7 @@ class WriterHandler(webapp.RequestHandler):
             post.content_formatted = content_formatted
             post.date = date
             post.permalink = permalink
-        else: 
+        else:
             # Add new post,create post
             post = Post(title=title, author=author, content=content, content_formatted=content_formatted, date=date, permalink=permalink)
             # Archie the post
@@ -283,6 +283,7 @@ class AddComment(webapp.RequestHandler):
         email = getparam(self, 'email')
         site = getparam(self, 'site').strip()
         content = getparam(self, 'content')
+        is_ajax = getparam(self, 'is_ajax')
 
         gt = Site.get('gtalk')
         if nickname.strip() == '':
@@ -291,10 +292,13 @@ class AddComment(webapp.RequestHandler):
             site = None
         if content.strip() == '':
             self.response.out.write('You comment has no meaning!!')
-        spam_pattern = r'.*<a\s+href="\s*http://.*">.*</a>'
-        if re.match(spam_pattern, content, re.DOTALL):
+        spam_pattern = r'.*http://.*'
+        if not is_ajax or re.match(spam_pattern, content, re.DOTALL):
             ip = self.request.remote_addr
             logging.warn('Spam sent from %s' % ip)
+            self.response.out.write('spam')
+            xmpp.send_message(gt,
+                '%s(%s)(%s) comments on %s: %s' % (nickname, email, ip, permalink, content))
         else:
             gravatar = getavatar(email, size='40')
             comment = Comment(post=post_key, nickname=nickname, email=email,
@@ -304,14 +308,14 @@ class AddComment(webapp.RequestHandler):
             comment.post.put()
             comment.put()
             permalink = self.request.host_url + '/post/' + comment.post.permalink
-            if getparam(self, 'is_ajax'):
+            if is_ajax:
                 data = {'avatar': gravatar, 'nickname': nickname, 'content': content, 'date': datetime.now().strftime('%Y-%m-%d %H:%M')}
                 self.response.headers['Content-Type'] = 'application/json'
                 self.response.out.write(simplejson.dumps(data))
             else:
                 redirect_link = '%s#%s' %(permalink, comment.key().id())
                 self.redirect(redirect_link)
-            xmpp.send_message(gt, 
+            xmpp.send_message(gt,
                 '%s(%s) comments on %s: %s' % (nickname, email, permalink, content))
 
 class DeleteComment(webapp.RequestHandler):
@@ -324,7 +328,7 @@ class DeleteComment(webapp.RequestHandler):
             post.comment_count = post.comment_count - 1
             post.put()
             self.response.out.write('ok')
-        except Exception, e: 
+        except Exception, e:
             self.response.out.write(e)
 
 class ReplyComment(webapp.RequestHandler):
@@ -339,7 +343,7 @@ class ReplyComment(webapp.RequestHandler):
         self.response.headers['content-type'] = 'application/json'
         self.response.out.write(json)
 
-# livid/picky: 
+# livid/picky:
 # https://github.com/livid/picky/blob/master/main.py
 class AtomFeedHandler(webapp.RequestHandler):
     def get(self):
@@ -422,22 +426,22 @@ class MemcacheHandler(webapp.RequestHandler):
         self.response.out.write('flush_all %s' % result)
 
 application = webapp.WSGIApplication(
-				    [('/', MainHandler),
-				     ('/admin/', AdminHandler),
-				     ('/post/([0-9a-zA-Z\-\_]+)', PostHandler),
-				     ('/post/(.*)', PostHandler),
-                     ('/archive/(.*)', ArchiveHandler),
-                     ('/tag/(.*)', TagHandler),
-                     ('/feed/', AtomFeedHandler),
-                     ('/admin/setting', SettingsHandler),
-				     ('/admin/write', WriterHandler),
-				     ('/admin/post/delete', DeletePost),
-                     ('/admin/comment/delete', DeleteComment),
-				     ('/comment', AddComment),
-                     ('/admin/comment/reply', ReplyComment),
-                     ('/logout', LogoutHandler),
-                     ('/admin/memcache', MemcacheHandler)
-				    ], debug=True)
+            [('/', MainHandler),
+             ('/admin/', AdminHandler),
+             ('/post/([0-9a-zA-Z\-\_]+)', PostHandler),
+             ('/post/(.*)', PostHandler),
+             ('/archive/(.*)', ArchiveHandler),
+             ('/tag/(.*)', TagHandler),
+             ('/feed/', AtomFeedHandler),
+             ('/admin/setting', SettingsHandler),
+             ('/admin/write', WriterHandler),
+             ('/admin/post/delete', DeletePost),
+             ('/admin/comment/delete', DeleteComment),
+             ('/comment', AddComment),
+             ('/admin/comment/reply', ReplyComment),
+             ('/logout', LogoutHandler),
+             ('/admin/memcache', MemcacheHandler)
+            ], debug=True)
 
 def main():
     util.run_wsgi_app(application)
